@@ -1,5 +1,6 @@
 #include "EspNowMessenger.h"
 #include <WiFi.h>
+#include <esp_wifi.h>
 #include <esp_crc.h>
 #include "config.h"
 
@@ -29,6 +30,12 @@ EspNowMessenger::~EspNowMessenger() {
 bool EspNowMessenger::begin(const MacAddress& _otherAddress, const uint8_t (&pmk)[16], const uint8_t (&lmk)[16]) {
     WiFi.mode(WIFI_MODE_STA);
     WiFi.channel(1);
+
+    // Enable long-range protocol
+    esp_err_t setLongRangeError = esp_wifi_set_protocol(WIFI_IF_STA, WIFI_PROTOCOL_LR);
+    if  (setLongRangeError != 0) {
+        LOGFMT("Failed to set long-range mode for ESP-NOW, error code: %02X\n", setLongRangeError);
+    }
 
     esp_err_t initResult = esp_now_init();
     if (initResult != ESP_OK) {
